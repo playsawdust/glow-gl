@@ -1,0 +1,89 @@
+
+
+plugins {
+	id "java-library"
+	id "maven-publish"
+	id "com.github.hierynomus.license" version "0.16.1"
+}
+
+java {
+	toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+
+repositories {
+	mavenCentral()
+}
+
+ext.lwjglVersion = "3.3.1"
+ext.steamworks4jVersion = "1.9.0"
+ext.steamworks4j_serverVersion = "1.9.0"
+ext.lwjglNatives = ["linux", "windows", "macos", "macos-arm64"]
+
+dependencies {
+	api 'org.checkerframework:checker-qual:2.5.6'
+	
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+	
+	//BOM for lwjgl - this contains all the artifacts but is not *included* except as a version catalog.
+	implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+	//lwjgl
+	implementation "org.lwjgl:lwjgl"
+	implementation "org.lwjgl:lwjgl-glfw"
+	implementation "org.lwjgl:lwjgl-openal"
+	implementation "org.lwjgl:lwjgl-opengl"
+	implementation "org.lwjgl:lwjgl-opengles"
+	implementation "org.lwjgl:lwjgl-sse"
+	implementation "org.lwjgl:lwjgl-stb"
+	
+	//natives
+	for(String lwjglNative : lwjglNatives) {
+		String cur = "natives-" + lwjglNative
+		runtimeOnly "org.lwjgl:lwjgl::$cur"
+		runtimeOnly "org.lwjgl:lwjgl-glfw::$cur"
+		runtimeOnly "org.lwjgl:lwjgl-openal::$cur"
+		runtimeOnly "org.lwjgl:lwjgl-opengl::$cur"
+		runtimeOnly "org.lwjgl:lwjgl-opengles::$cur"
+		runtimeOnly "org.lwjgl:lwjgl-sse::$cur"
+		runtimeOnly "org.lwjgl:lwjgl-stb::$cur"
+	};
+	
+	//Steamworks
+	implementation "com.code-disaster.steamworks4j:steamworks4j:${steamworks4jVersion}"
+	implementation "com.code-disaster.steamworks4j:steamworks4j-server:${steamworks4j_serverVersion}"
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+	it.options.release = 17
+}
+
+java {
+	//Only here for wide IDE compatibility
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+test {
+	useJUnitPlatform()
+}
+
+license {
+	header rootProject.file('HEADER')
+}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
+	}
+	
+	repositories {
+		//TODO: Repositories to publish to
+	}
+}
