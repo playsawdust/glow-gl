@@ -30,7 +30,7 @@ public class GLWindow implements GLResource {
 	
 	private final long handle;
 	
-	public GLWindow(int width, int height, String title, long monitor) {
+	public GLWindow(int width, int height, GLVersion version) {
 		GLFWErrorCallback.createPrint(System.out).set(); //System.out for now; callback later.
 		
 		//Safe to call multiple times for multiple windows, even if glfwTerminate has been called.
@@ -41,17 +41,41 @@ public class GLWindow implements GLResource {
 		GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GLFW.GLFW_FALSE);
 		GLFW.glfwWindowHint(GLFW.GLFW_RESIZABLE, GLFW.GLFW_TRUE);
 		
-		handle = GLFW.glfwCreateWindow(width, height, title, MemoryUtil.NULL, MemoryUtil.NULL);
+		version.setWindowHints();
+		/*
+		GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, version.api().value());
+		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, version.major());
+		GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, version.minor());
+		GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE, version.profile().value());
+		*/
+		
+		handle = GLFW.glfwCreateWindow(width, height, "Window", MemoryUtil.NULL, MemoryUtil.NULL);
 		if (handle == MemoryUtil.NULL) throw new IllegalStateException("Could not create the window.");
 		
 		GLFW.glfwSetKeyCallback(handle, (window, key, scancode, action, mods) -> {
 			if ( key == GLFW.GLFW_KEY_ESCAPE && action == GLFW.GLFW_RELEASE )
 				GLFW.glfwSetWindowShouldClose(window, true);
 		});
+		
+		
+		//int profile = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_OPENGL_PROFILE);
+		//if (profile == GLFW.GLFW_OPENGL_CORE_PROFILE) System.out.println("OPENGL Core Profile Obtained");
+		//else if (profile == GLFW.GLFW_OPENGL_COMPAT_PROFILE) System.out.println("OPENGL Compat Profile Obtained");
+		//else if (profile == GLFW.GLFW_NO_API) System.out.println("No API!");
+		//else System.out.println("Unknown Profile: "+profile);
 	}
 	
 	public long handle() {
 		return handle;
+	}
+	
+	public GLVersion getVersion() {
+		int profile = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_OPENGL_PROFILE);
+		int major = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_CONTEXT_VERSION_MAJOR);
+		int minor = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_CONTEXT_VERSION_MINOR);
+		int api = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_CLIENT_API);
+		
+		return new GLVersion(GLVersion.API.of(api), GLVersion.Profile.of(profile), major, minor);
 	}
 	
 	public Vector2d getPosition() {
@@ -143,6 +167,18 @@ public class GLWindow implements GLResource {
 	 */
 	public void makeCurrent() {
 		GLFW.glfwMakeContextCurrent(handle);
+	}
+	
+	public boolean shouldClose() {
+		return GLFW.glfwWindowShouldClose(handle);
+	}
+	
+	public void poll() {
+		GLFW.glfwPollEvents();
+	}
+	
+	public void swapBuffers() {
+		GLFW.glfwSwapBuffers(handle);
 	}
 	
 	@Override
