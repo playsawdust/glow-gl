@@ -13,10 +13,13 @@ import java.nio.IntBuffer;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import com.playsawdust.glow.gl.offheap.GLResource;
+import com.playsawdust.glow.render.Painter;
 import com.playsawdust.glow.vecmath.Rect2d;
 import com.playsawdust.glow.vecmath.Vector2d;
 
@@ -29,6 +32,7 @@ public class GLWindow implements GLResource {
 	
 	
 	private final long handle;
+	private final FramebufferPainter framebufferPainter;
 	
 	public GLWindow(int width, int height, GLVersion version) {
 		GLFWErrorCallback.createPrint(System.out).set(); //System.out for now; callback later.
@@ -57,7 +61,11 @@ public class GLWindow implements GLResource {
 				GLFW.glfwSetWindowShouldClose(window, true);
 		});
 		
+		framebufferPainter = new FramebufferPainter();
 		
+		GLFW.glfwMakeContextCurrent(handle);
+		GL.createCapabilities();
+		GL11.glClearColor(0,0,0,1);
 		//int profile = GLFW.glfwGetWindowAttrib(handle, GLFW.GLFW_OPENGL_PROFILE);
 		//if (profile == GLFW.GLFW_OPENGL_CORE_PROFILE) System.out.println("OPENGL Core Profile Obtained");
 		//else if (profile == GLFW.GLFW_OPENGL_COMPAT_PROFILE) System.out.println("OPENGL Compat Profile Obtained");
@@ -175,6 +183,26 @@ public class GLWindow implements GLResource {
 	
 	public void poll() {
 		GLFW.glfwPollEvents();
+	}
+	
+	/**
+	 * Returns a Painter that will paint immediately to the next frame's framebuffer for this window. Binds any shaders
+	 * necessary to do this.
+	 */
+	public Painter startPainting() {
+		int width = 1;
+		int height = 1;
+		
+		try (MemoryStack stack = MemoryStack.stackPush() ) {
+			IntBuffer xBuf = stack.mallocInt(1);
+			IntBuffer yBuf = stack.mallocInt(1);
+			
+			GLFW.glfwGetFramebufferSize(handle, xBuf, yBuf);
+			width = xBuf.get();
+			height = yBuf.get();
+		}
+		framebufferPainter.startPainting(width, height);
+		return framebufferPainter;
 	}
 	
 	public void swapBuffers() {
