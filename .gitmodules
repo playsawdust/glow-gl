@@ -1,0 +1,3 @@
+[submodule "glow-base"]
+	path = glow-base
+	url = git@github.com:playsawdust/glow-base.git

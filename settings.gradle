@@ -1,0 +1,2 @@
+include ":glow-base"
+project(":glow-base").projectDir = file("glow-base")

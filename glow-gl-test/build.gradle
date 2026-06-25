@@ -1,0 +1,46 @@
+plugins {
+	id "application"
+}
+
+base {
+	archivesName = "glow-gl-test";
+}
+
+version = "0.0.1";
+group = "blue.endless";
+
+java {
+	toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.checkerframework:checker-qual:2.5.6'
+	//implementation ':glow-base'
+	implementation project(':glow-gl')
+	
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+sourceSets {
+	main {
+		java {
+			srcDir "src/java";
+		}
+
+		resources {
+			srcDir "src/resources";
+		}
+	}
+}
+
+test {
+	useJUnitPlatform()
+}

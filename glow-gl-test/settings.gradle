@@ -1,0 +1,5 @@
+include ":glow-gl"
+project(":glow-gl").projectDir = file("..");
+
+include ":glow-base"
+project(":glow-base").projectDir = file("../glow-base")

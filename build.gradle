@@ -1,0 +1,184 @@
+plugins {
+	id "java-library"
+	id "maven-publish"
+	//id "com.github.hierynomus.license" version "0.16.1"
+}
+
+base {
+	archivesName = "glow-gl";
+}
+
+version = "0.0.1";
+group = "com.playsawdust.glow";
+
+java {
+	toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+	api 'org.checkerframework:checker-qual:2.5.6'
+	api project(':glow-base')
+	
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+sourceSets {
+	main {
+		java {
+			srcDir "src/java";
+		}
+
+		resources {
+			srcDir "src/resources";
+		}
+	}
+}
+
+//tasks.withType(JavaCompile).configureEach {
+//	it.options.encoding = "UTF-8"
+//	it.options.release = 25
+//}
+
+//java {
+	//Only here for wide IDE compatibility
+//	sourceCompatibility = JavaVersion.VERSION_25
+//	targetCompatibility = JavaVersion.VERSION_25
+//}
+
+test {
+	useJUnitPlatform()
+}
+
+//license {
+//	header rootProject.file('HEADER')
+//}
+
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
+	}
+	
+	repositories {
+	}
+}
+
+publishing {
+	publications {
+		mavenPrimary(MavenPublication) {
+			from components.java;
+
+
+			groupId project.group;
+			artifactId "glow-base";
+			version project.version;
+
+			pom {
+				name = "Glow - Base";
+				description = "Platform-Agnostic Graphics API";
+				url = "https://github.com/playsawdust/glow-base";
+
+				developers {
+					developer {
+						id = "falkreon"
+						name = "Isaac Ellingson"
+						email = "falkreon@gmail.com"
+					}
+				}
+
+				licenses {
+					license {
+						name = "MIT License"
+						url = "https://opensource.org/licenses/MIT"
+						distribution = "repo"
+					}
+				}
+
+				scm {
+					url = "https://github.com/playsawdust/glow-base"
+					connection = "scm:git@github.com:playsawdust/glow-base.git"
+					developerConnection = "scm:git@github.com:playsawdust/glow-base.git"
+				}
+			}
+		}
+	}
+
+	repositories {
+		if (project.hasProperty("sleepingUsername")) {
+			print "Publication credentials applied,"
+			maven {
+				url "https://repo-api.sleeping.town/"
+
+				credentials {
+					username = sleepingUsername
+					password = sleepingPassword
+				}
+			}
+		} else {
+			print "There were no credentials available for publication."
+		}
+	}
+}
+
+// Note: The following creates duplicate repositories/dependencies blocks, which is weirdly fine
+// BEGIN LWJGL GENERATED BLOCK
+import org.gradle.internal.os.OperatingSystem
+
+project.ext.lwjglVersion = "3.4.1"
+project.ext.steamworks4jVersion = "1.10.0"
+
+switch (OperatingSystem.current()) {
+	case OperatingSystem.LINUX:
+		project.ext.lwjglNatives = "natives-linux"
+		def osArch = System.getProperty("os.arch")
+		if (osArch.startsWith("arm") || osArch.startsWith("aarch64")) {
+			project.ext.lwjglNatives += osArch.contains("64") || osArch.startsWith("armv8") ? "-arm64" : "-arm32"
+		} else if  (osArch.startsWith("ppc")) {
+			project.ext.lwjglNatives += "-ppc64le"
+		} else if  (osArch.startsWith("riscv")) {
+			project.ext.lwjglNatives += "-riscv64"
+		}
+		break
+	case OperatingSystem.MAC_OS:
+		project.ext.lwjglNatives = "natives-macos"
+		break
+	case OperatingSystem.WINDOWS:
+		project.ext.lwjglNatives = "natives-windows"
+		break
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation platform("org.lwjgl:lwjgl-bom:$lwjglVersion")
+
+	implementation "org.lwjgl:lwjgl"
+	implementation "org.lwjgl:lwjgl-assimp"
+	implementation "org.lwjgl:lwjgl-glfw"
+	implementation "org.lwjgl:lwjgl-openal"
+	implementation "org.lwjgl:lwjgl-opencl"
+	implementation "org.lwjgl:lwjgl-opengl"
+	implementation "org.lwjgl:lwjgl-stb"
+	implementation "org.lwjgl:lwjgl::$lwjglNatives"
+	implementation "org.lwjgl:lwjgl-assimp::$lwjglNatives"
+	implementation "org.lwjgl:lwjgl-glfw::$lwjglNatives"
+	implementation "org.lwjgl:lwjgl-openal::$lwjglNatives"
+	implementation "org.lwjgl:lwjgl-opengl::$lwjglNatives"
+	implementation "org.lwjgl:lwjgl-stb::$lwjglNatives"
+	implementation "com.code-disaster.steamworks4j:steamworks4j:${steamworks4jVersion}"
+}
+// END LWJGL GENERATED BLOCK
+
