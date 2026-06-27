@@ -184,18 +184,19 @@ public class WindowPainter implements Painter {
 	public void fillRect(int x, int y, int width, int height, RGBColor color) {
 		shader.bind();
 		VertexArray vertexArray = new VertexArray();
+		vertexArray.bind();
 		vertexArray.bindData(0,
 			new float[] {
-				x,       y,        0,
-				x+width, y,        0,
-				x+width, y+height, 0,
-				x,       y,        0,
-				x+width, y+height, 0,
-				x,       y+height, 0
+				x, y, 0,
+				x+width, y, 0,
+				x, y+height, 0,
+				x+width, y+height, 0
 			},
 			GLType.FLOAT_VEC3);
+		vertexArray.bindIndices(1, new int[] { 0, 1, 3, 0, 3, 2 });
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
 		
 		vertexArray.destroy();
 	}

@@ -3,30 +3,34 @@ package com.playsawdust.glow.gl;
 import static org.lwjgl.opengl.GL31.*;
 
 public class VertexBuffer implements GLResource {
-
+	private BufferTarget target;
 	private final int handle;
 	
 	public VertexBuffer() {
+		target = null;
 		handle = glGenBuffers();
 	}
 	
-	public void setStaticData(float[] data) {
+	public void setStaticData(BufferTarget target, float[] data) {
+		this.target = target;
 		bind();
-		glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
+		glBufferData(target.value(), data, GL_STATIC_DRAW);
 	}
 	
-	public void setDynamicData(float[] data) {
+	public void setDynamicData(BufferTarget target, float[] data) {
+		this.target = target;
 		bind();
-		glBufferData(GL_ARRAY_BUFFER, data, GL_DYNAMIC_DRAW);
+		glBufferData(target.value(), data, GL_DYNAMIC_DRAW);
 	}
 	
-	public void setStaticData(int[] data) {
+	public void setStaticData(BufferTarget target, int[] data) {
+		this.target = target;
 		bind();
-		glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
+		glBufferData(target.value(), data, GL_STATIC_DRAW);
 	}
 	
 	public void bind() {
-		glBindBuffer(GL_ARRAY_BUFFER, handle);
+		glBindBuffer(target.value(), handle);
 	}
 	
 	@Override
@@ -38,5 +42,4 @@ public class VertexBuffer implements GLResource {
 	public int getHandle() {
 		return handle;
 	}
-	
 }

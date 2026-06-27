@@ -9,6 +9,7 @@ public class VertexArray implements GLResource {
 	private int handle;
 	// TODO: Switch to FastUtil?
 	private Map<Integer, VertexBuffer> managedBuffers = new HashMap<>();
+	private VertexBuffer indexBuffer = null;
 	
 	public VertexArray() {
 		handle = glGenVertexArrays();
@@ -31,21 +32,26 @@ public class VertexArray implements GLResource {
 		glEnableVertexAttribArray(index);
 	}
 	
-	/*
-	public void bindBuffer(int index, VertexBuffer buffer, GLType type) {
-		bind();
-		buffer.bind();
-		glVertexAttribPointer(index, type.primitiveCount(), type.primitiveType().value(), false, stride, offset);
-	}*/
-	
 	public void bindData(int index, float[] data, GLType dataType) {
 		VertexBuffer buf = new VertexBuffer();
-		buf.setStaticData(data);
+		buf.setStaticData(BufferTarget.ARRAY, data);
 		VertexBuffer oldBuf = managedBuffers.put(index, buf);
 		if (oldBuf != null) {
 			oldBuf.destroy();
 		}
 		bindBuffer(index, buf, dataType);
+	}
+	
+	/**
+	 * Bind index data to this VertexArray. Obviously you must have the VertexArray bound before doing this!
+	 * @param indices
+	 */
+	public void bindIndices(int index, int[] indices) {
+		VertexBuffer buf = new VertexBuffer();
+		buf.setStaticData(BufferTarget.ELEMENT_ARRAY, indices);
+		if (indexBuffer != null) indexBuffer.destroy();
+		indexBuffer = buf;
+		bindBuffer(index, buf, GLType.UNSIGNED_INT);
 	}
 	
 	@Override
