@@ -3,6 +3,7 @@ package com.playsawdust.glow.gl;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL41;
 
 import com.playsawdust.glow.offheap.Destroyable;
 import com.playsawdust.glow.render.Painter;
@@ -81,6 +82,8 @@ public class Window implements Destroyable {
 	 */
 	public void presentFrame() {
 		GLFW.glfwSwapBuffers(handle);
+		Vector2i size = getSize();
+		GL41.glViewport(0, 0, size.x(), size.y());
 		GLFW.glfwPollEvents();
 	}
 	

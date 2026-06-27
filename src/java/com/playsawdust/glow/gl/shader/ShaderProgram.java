@@ -8,6 +8,8 @@ public class ShaderProgram implements GLResource {
 	private final int vertHandle;
 	private final int fragHandle;
 	
+	
+	
 	public ShaderProgram(String vert, String frag) {
 		handle = glCreateProgram();
 		vertHandle = glCreateShader(GL_VERTEX_SHADER);
@@ -19,12 +21,18 @@ public class ShaderProgram implements GLResource {
 			throw new RuntimeException("Vertex shader compile error: " + err);
 		}
 		
+		String log = glGetShaderInfoLog(vertHandle);
+		if (log != null && !log.isBlank()) System.out.println(log);
+		
 		glShaderSource(fragHandle, frag);
 		glCompileShader(fragHandle);
 		if (glGetShaderi(fragHandle, GL_COMPILE_STATUS) != GL_TRUE) {
 			String err = glGetShaderInfoLog(fragHandle);
 			throw new RuntimeException("Fragment shader compile error: " + err);
 		}
+		
+		log = glGetShaderInfoLog(fragHandle);
+		if (log != null && !log.isBlank()) System.out.println(log);
 		
 		glAttachShader(handle, vertHandle);
 		glAttachShader(handle, fragHandle);
@@ -33,11 +41,16 @@ public class ShaderProgram implements GLResource {
 			String err = glGetProgramInfoLog(handle);
 			throw new RuntimeException("Shader program link error: "+err);
 		}
+		
+		log = glGetProgramInfoLog(handle);
+		if (log != null && !log.isBlank()) System.out.println(log);
 	}
 	
 	public void bind() {
 		glUseProgram(handle);
 	}
+	
+	
 	
 	@Override
 	public void destroy() {

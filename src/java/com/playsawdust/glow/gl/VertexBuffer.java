@@ -2,22 +2,27 @@ package com.playsawdust.glow.gl;
 
 import static org.lwjgl.opengl.GL31.*;
 
-public class ArrayBuffer implements GLResource {
+public class VertexBuffer implements GLResource {
 
 	private final int handle;
 	
-	public ArrayBuffer() {
+	public VertexBuffer() {
 		handle = glGenBuffers();
 	}
 	
 	public void setStaticData(float[] data) {
 		bind();
-		glBufferData(handle, data, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
 	}
 	
 	public void setDynamicData(float[] data) {
 		bind();
-		glBufferData(handle, data, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, data, GL_DYNAMIC_DRAW);
+	}
+	
+	public void setStaticData(int[] data) {
+		bind();
+		glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW);
 	}
 	
 	public void bind() {
