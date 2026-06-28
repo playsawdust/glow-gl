@@ -3,6 +3,7 @@ package com.playsawdust.glow.gl;
 import com.playsawdust.glow.gl.shader.ShaderProgram;
 import com.playsawdust.glow.image.ImageData;
 import com.playsawdust.glow.image.color.RGBColor;
+import com.playsawdust.glow.offheap.Destroyable;
 import com.playsawdust.glow.render.Painter;
 import com.playsawdust.glow.vecmath.Matrix4;
 import com.playsawdust.glow.vecmath.Vector2i;
@@ -19,16 +20,19 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
-public class WindowPainter implements Painter {
+public class WindowPainter implements Painter, Destroyable {
 	public static final String VERT_SHADER_SRC = """
 			#version 330
 			
 			uniform mat4 transform;
 			
-			layout(location=0) in vec3 inPosition;
+			layout(location=0) in vec3 position;
+			layout(location=1) in vec4 color;
+			out vec4 vertexColor;
 			
 			void main() {
-				gl_Position = transform * vec4(inPosition, 1.0);
+				vertexColor = color;
+				gl_Position = transform * vec4(position, 1.0);
 				
 			}
 			""";
@@ -36,19 +40,22 @@ public class WindowPainter implements Painter {
 	public static final String FRAG_SHADER_SRC = """
 			#version 330
 			
+			in vec4 vertexColor;
 			out vec4 fragColor;
 			
 			void main() {
-				fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+				fragColor = vertexColor; //vec4(1.0, 0.0, 0.0, 1.0);
 			}
 			""";
 	
+	private final VertexArray vertexArray;
 	private final Window target;
 	private ShaderProgram shader;
 	
 	public WindowPainter(Window target) {
 		this.target = target;
 		this.shader = new ShaderProgram(VERT_SHADER_SRC, FRAG_SHADER_SRC);
+		this.vertexArray = new VertexArray();
 	}
 	
 	public void startDrawing() {
@@ -183,7 +190,6 @@ public class WindowPainter implements Painter {
 	@Override
 	public void fillRect(int x, int y, int width, int height, RGBColor color) {
 		shader.bind();
-		VertexArray vertexArray = new VertexArray();
 		vertexArray.bind();
 		vertexArray.bindData(0,
 			new float[] {
@@ -193,12 +199,23 @@ public class WindowPainter implements Painter {
 				x+width, y+height, 0
 			},
 			GLType.FLOAT_VEC3);
-		vertexArray.bindIndices(1, new int[] { 0, 1, 3, 0, 3, 2 });
+		vertexArray.bindData(1,
+			new float[] {
+				color.r(), color.g(), color.b(), 1,
+				color.r(), color.g(), color.b(), 1,
+				color.r(), color.g(), color.b(), 1,
+				color.r(), color.g(), color.b(), 1
+			},
+			GLType.FLOAT_VEC4);
+		vertexArray.bindIndices(2, new int[] { 0, 1, 3, 0, 3, 2 });
+		
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-		
+	}
+
+	@Override
+	public void destroy() {
 		vertexArray.destroy();
+		shader.destroy();
 	}
 	
 }

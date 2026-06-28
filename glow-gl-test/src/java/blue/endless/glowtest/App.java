@@ -12,25 +12,23 @@ public class App {
 		
 		while(!window.shouldClose()) {
 			try {
-				Thread.sleep(30);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				Thread.sleep(10);
+			} catch (InterruptedException e) {}
 			
 			
 			window.paint(painter -> {
 				glClearColor(0, 1, 1, 0);
 				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				painter.fillRect(0, 0, 25, 25, new RGBColor(0xFF00FF));
+				for(int y=0; y<128; y++) {
+					for(int x=0; x<128; x++) {
+						float red = (float) Math.random() * 0.5f + 0.5f;
+						float green = (float) Math.random() * 0.5f + 0.5f;
+						float blue = (float) Math.random() * 0.5f + 0.5f;
+						
+						painter.fillRect(8*x, 8*y, 8, 8, new RGBColor(1, red, green, blue));
+					}
+				}
 			});
-			
-			
-			
-			// Draw - the following is now repeatable
-			//shaderProgram.bind();
-			//vao.bind();
-			//glDrawArrays(GL_TRIANGLES, 0, 3);
 			
 			window.presentFrame();
 		}

@@ -33,13 +33,16 @@ public class VertexArray implements GLResource {
 	}
 	
 	public void bindData(int index, float[] data, GLType dataType) {
-		VertexBuffer buf = new VertexBuffer();
-		buf.setStaticData(BufferTarget.ARRAY, data);
-		VertexBuffer oldBuf = managedBuffers.put(index, buf);
+		VertexBuffer oldBuf = managedBuffers.get(index);
 		if (oldBuf != null) {
-			oldBuf.destroy();
+			oldBuf.setStaticData(BufferTarget.ARRAY, data);
+			bindBuffer(index, oldBuf, dataType);
+		} else {
+			VertexBuffer buf = new VertexBuffer();
+			buf.setStaticData(BufferTarget.ARRAY, data);
+			managedBuffers.put(index, buf);
+			bindBuffer(index, buf, dataType);
 		}
-		bindBuffer(index, buf, dataType);
 	}
 	
 	/**
