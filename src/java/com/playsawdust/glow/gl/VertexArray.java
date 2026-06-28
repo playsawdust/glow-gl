@@ -50,11 +50,15 @@ public class VertexArray implements GLResource {
 	 * @param indices
 	 */
 	public void bindIndices(int index, int[] indices) {
-		VertexBuffer buf = new VertexBuffer();
-		buf.setStaticData(BufferTarget.ELEMENT_ARRAY, indices);
-		if (indexBuffer != null) indexBuffer.destroy();
-		indexBuffer = buf;
-		bindBuffer(index, buf, GLType.UNSIGNED_INT);
+		if (indexBuffer != null) {
+			indexBuffer.setStaticData(BufferTarget.ELEMENT_ARRAY, indices);
+			bindBuffer(index, indexBuffer, GLType.UNSIGNED_INT);
+		} else {
+			VertexBuffer buf = new VertexBuffer();
+			buf.setStaticData(BufferTarget.ELEMENT_ARRAY, indices);
+			indexBuffer = buf;
+			bindBuffer(index, buf, GLType.UNSIGNED_INT);
+		}
 	}
 	
 	@Override
@@ -64,6 +68,10 @@ public class VertexArray implements GLResource {
 			buf.destroy();
 		}
 		managedBuffers.clear();
+		if (indexBuffer != null) {
+			indexBuffer.destroy();
+			indexBuffer = null;
+		}
 	}
 
 	@Override
