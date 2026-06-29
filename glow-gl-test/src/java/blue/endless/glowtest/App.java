@@ -17,8 +17,7 @@ public class App {
 			
 			
 			window.paint(painter -> {
-				glClearColor(0, 1, 1, 0);
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				painter.clear(new RGBColor(0xFF00FF));
 				for(int y=0; y<128; y++) {
 					for(int x=0; x<128; x++) {
 						float red = (float) Math.random() * 0.5f + 0.5f;

@@ -5,9 +5,15 @@ import com.playsawdust.glow.image.ImageData;
 import com.playsawdust.glow.image.color.RGBColor;
 import com.playsawdust.glow.offheap.Destroyable;
 import com.playsawdust.glow.render.Painter;
+import com.playsawdust.glow.vecmath.HalfFloat;
 import com.playsawdust.glow.vecmath.Matrix4;
+import com.playsawdust.glow.vecmath.Vector2d;
 import com.playsawdust.glow.vecmath.Vector2i;
 
+import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL11.glClear;
+import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL41.*;
 import static org.lwjgl.system.MemoryStack.stackGet;
 import static org.lwjgl.system.MemoryUtil.memASCII;
@@ -26,25 +32,31 @@ public class WindowPainter implements Painter, Destroyable {
 			
 			uniform mat4 transform;
 			
-			layout(location=0) in vec3 position;
+			layout(location=0) in vec2 position;
 			layout(location=1) in vec4 color;
+			layout(location=2) in vec2 uv;
 			out vec4 vertexColor;
+			out vec2 vertexUv;
 			
 			void main() {
 				vertexColor = color;
-				gl_Position = transform * vec4(position, 1.0);
-				
+				vertexUv = uv;
+				gl_Position = transform * vec4(position, 0.0, 1.0);
 			}
 			""";
 	
 	public static final String FRAG_SHADER_SRC = """
 			#version 330
 			
+			uniform sampler2D materialTexture;
+			
 			in vec4 vertexColor;
+			in vec2 vertexUv;
 			out vec4 fragColor;
 			
 			void main() {
-				fragColor = vertexColor; //vec4(1.0, 0.0, 0.0, 1.0);
+				vec4 texColor = texture(materialTexture, vertexUv);
+				fragColor = vertexColor; // * texColor;
 			}
 			""";
 	
@@ -64,6 +76,11 @@ public class WindowPainter implements Painter, Destroyable {
 		Vector2i windowSize = target.getSize();
 		int transformLoc = glGetUniformLocation(shader.getHandle(), "transform");
 		glUniformMatrix4fv(transformLoc, true, orthoMatrix(windowSize.x(), windowSize.y()));
+	}
+	
+	public void clear(RGBColor color) {
+		glClearColor(color.r(), color.g(), color.b(), 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 	
 	@Override
@@ -91,7 +108,7 @@ public class WindowPainter implements Painter, Destroyable {
 	public void drawTintImage(ImageData image, int destX, int destY, int srcX, int srcY, int width, int height, RGBColor tintColor) {
 		// TODO: FIXME THIS WILL NOT TINT THE IMAGE
 		drawImage(image, destX, destY, srcX, srcY, width, height, 1.0f);
-	}
+	} 
 
 	@Override
 	public void drawPixel(int x, int y, RGBColor color) {
@@ -193,12 +210,12 @@ public class WindowPainter implements Painter, Destroyable {
 		vertexArray.bind();
 		vertexArray.bindData(0,
 			new float[] {
-				x, y, 0,
-				x+width, y, 0,
-				x, y+height, 0,
-				x+width, y+height, 0
+				x, y,
+				x+width, y,
+				x, y+height,
+				x+width, y+height,
 			},
-			GLType.FLOAT_VEC3);
+			GLType.FLOAT_VEC2);
 		vertexArray.bindData(1,
 			new float[] {
 				color.r(), color.g(), color.b(), 1,
@@ -207,7 +224,15 @@ public class WindowPainter implements Painter, Destroyable {
 				color.r(), color.g(), color.b(), 1
 			},
 			GLType.FLOAT_VEC4);
-		vertexArray.bindIndices(2, new int[] { 0, 1, 3, 0, 3, 2 });
+		vertexArray.bindData(2,
+			new int[] {
+				HalfFloat.vecToHalfVec(new Vector2d(0, 0)),
+				HalfFloat.vecToHalfVec(new Vector2d(1, 0)),
+				HalfFloat.vecToHalfVec(new Vector2d(0, 1)),
+				HalfFloat.vecToHalfVec(new Vector2d(1, 1)),
+			},
+			GLType.HALF_VEC2);
+		vertexArray.bindIndices(3, new int[] { 0, 1, 3, 0, 3, 2 });
 		
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	}

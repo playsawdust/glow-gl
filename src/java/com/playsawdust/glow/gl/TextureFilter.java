@@ -14,24 +14,32 @@ public enum TextureFilter {
 	/**
 	 * Chooses the mipmap that most closely matches the size of the pixel being textured and uses the GL_NEAREST
 	 * criterion (the texture element closest to the specified texture coordinates) to produce a texture value. 
+	 * 
+	 * <p>This is equivalent to the GL constant GL_NEAREST_MIPMAP_NEAREST.
 	 */
 	NEAREST_ON_SINGLE_MIPMAP(GL_NEAREST_MIPMAP_NEAREST),
 	/**
 	 * Chooses the mipmap that most closely matches the size of the pixel being textured and uses the GL_LINEAR
 	 * criterion (a weighted average of the four texture elements that are closest to the specified texture coordinates)
 	 * to produce a texture value. 
+	 * 
+	 * <p>This is equivalent to the GL constant GL_LINEAR_MIPMAP_NEAREST.
 	 */
 	LINEAR_ON_SINGLE_MIPMAP(GL_LINEAR_MIPMAP_NEAREST),
 	/**
 	 * Chooses the two mipmaps that most closely match the size of the pixel being textured and uses the GL_NEAREST
 	 * criterion (the texture element closest to the specified texture coordinates ) to produce a texture value from
-	 * each mipmap. The final texture value is a weighted average of those two values. 
+	 * each mipmap. The final texture value is a weighted average of those two values.
+	 * 
+	 * <p>This is equivalent to the GL constant GL_NEAREST_MIPMAP_LINEAR.
 	 */
 	NEAREST_ON_TWO_MIPMAPS(GL_NEAREST_MIPMAP_LINEAR),
 	/**
 	 * Chooses the two mipmaps that most closely match the size of the pixel being textured and uses the GL_LINEAR
 	 * criterion (a weighted average of the texture elements that are closest to the specified texture coordinates) to
-	 * produce a texture value from each mipmap. The final texture value is a weighted average of those two values. 
+	 * produce a texture value from each mipmap. The final texture value is a weighted average of those two values.
+	 * 
+	 * <p>This is equivalent to the GL constant GL_LINEAR_MIPMAP_LINEAR.
 	 */
 	LINEAR_ON_TWO_MIPMAPS(GL_LINEAR_MIPMAP_LINEAR)
 	;

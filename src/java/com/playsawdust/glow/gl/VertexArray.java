@@ -45,6 +45,19 @@ public class VertexArray implements GLResource {
 		}
 	}
 	
+	public void bindData(int index, int[] data, GLType dataType) {
+		VertexBuffer oldBuf = managedBuffers.get(index);
+		if (oldBuf != null) {
+			oldBuf.setStaticData(BufferTarget.ARRAY, data);
+			bindBuffer(index, oldBuf, dataType);
+		} else {
+			VertexBuffer buf = new VertexBuffer();
+			buf.setStaticData(BufferTarget.ARRAY, data);
+			managedBuffers.put(index, buf);
+			bindBuffer(index, buf, dataType);
+		}
+	}
+	
 	/**
 	 * Bind index data to this VertexArray. Obviously you must have the VertexArray bound before doing this!
 	 * @param indices

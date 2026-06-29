@@ -91,7 +91,7 @@ public class Window implements Destroyable {
 		return GLFW.glfwWindowShouldClose(handle);
 	}
 
-	public void paint(Consumer<Painter> paintMethod) {
+	public void paint(Consumer<WindowPainter> paintMethod) {
 		painter.startDrawing();
 		paintMethod.accept(painter);
 	}
