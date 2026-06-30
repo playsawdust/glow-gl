@@ -66,4 +66,13 @@ public class ShaderProgram implements GLResource {
 		return handle;
 	}
 	
+	public void setUniform(String name, int value) {
+		int index = glGetUniformIndices(handle, name);
+		if (index != -1) {
+			glUniform1i(index, value);
+		} else {
+			System.out.println("Can't set uniform - it doesn't exist");
+		}
+	}
+	
 }

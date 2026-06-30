@@ -37,14 +37,17 @@ public class Window implements Destroyable {
 		}
 		
 		GLFWErrorCallback.createPrint(System.out).set();
+		
 	}
 	
 	public static void shutdown() {
 		GLFW.glfwTerminate();
-		GLFW.glfwSetErrorCallback(null);
+		GLFW.glfwSetErrorCallback(null).free();;
 	}
 	
 	private final long handle;
+	private int width;
+	private int height;
 	private final WindowPainter painter;
 	
 	public Window(String title) {
@@ -62,6 +65,18 @@ public class Window implements Destroyable {
 		GLFW.glfwMakeContextCurrent(handle);
 		GL.createCapabilities();
 		painter = new WindowPainter(this);
+		
+		int[] x = new int[1];
+		int[] y = new int[1];
+		GLFW.glfwGetWindowSize(handle, x, y);
+		width = x[0];
+		height = y[0];
+		
+		GLFW.glfwSetWindowSizeCallback(handle, (long _, int width, int height) -> {
+			this.width = width;
+			this.height = height;
+			GL41.glViewport(0, 0, width, height);
+		});
 	}
 	
 	public Window() {
@@ -82,8 +97,8 @@ public class Window implements Destroyable {
 	 */
 	public void presentFrame() {
 		GLFW.glfwSwapBuffers(handle);
-		Vector2i size = getSize();
-		GL41.glViewport(0, 0, size.x(), size.y());
+		//Vector2i size = getSize();
+		//GL41.glViewport(0, 0, size.x(), size.y());
 		GLFW.glfwPollEvents();
 	}
 	
@@ -97,26 +112,33 @@ public class Window implements Destroyable {
 	}
 	
 	public Vector2i getSize() {
+		/*
 		int[] x = new int[1];
 		int[] y = new int[1];
 		GLFW.glfwGetWindowSize(handle, x, y);
-		return new Vector2i(x[0], y[0]);
+		return new Vector2i(x[0], y[0]);*/
+		return new Vector2i(width, height);
 	}
 	
 	public int getWidth() {
+		return width;
+		/*
 		int[] x = new int[1];
 		GLFW.glfwGetWindowSize(handle, x, null);
-		return x[0];
+		return x[0];*/
 	}
 	
 	public int getHeight() {
+		return height;
+		/*
 		int[] y = new int[1];
 		GLFW.glfwGetWindowSize(handle, null, y);
-		return y[0];
+		return y[0];*/
 	}
 	
 	@Override
 	public void destroy() {
+		GLFW.glfwSetWindowSizeCallback(handle, null).free();
 		GLFW.glfwDestroyWindow(handle);
 	}
 	

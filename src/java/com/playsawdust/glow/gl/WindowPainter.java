@@ -2,6 +2,7 @@ package com.playsawdust.glow.gl;
 
 import com.playsawdust.glow.gl.shader.ShaderProgram;
 import com.playsawdust.glow.image.ImageData;
+import com.playsawdust.glow.image.SrgbImageData;
 import com.playsawdust.glow.image.color.RGBColor;
 import com.playsawdust.glow.offheap.Destroyable;
 import com.playsawdust.glow.render.Painter;
@@ -35,6 +36,7 @@ public class WindowPainter implements Painter, Destroyable {
 			layout(location=0) in vec2 position;
 			layout(location=1) in vec4 color;
 			layout(location=2) in vec2 uv;
+			
 			out vec4 vertexColor;
 			out vec2 vertexUv;
 			
@@ -56,18 +58,23 @@ public class WindowPainter implements Painter, Destroyable {
 			
 			void main() {
 				vec4 texColor = texture(materialTexture, vertexUv);
-				fragColor = vertexColor; // * texColor;
+				fragColor = vertexColor * vec4(texColor.xy, 1, 1);
 			}
 			""";
 	
 	private final VertexArray vertexArray;
 	private final Window target;
 	private ShaderProgram shader;
+	private Texture whitePixel;
 	
 	public WindowPainter(Window target) {
 		this.target = target;
 		this.shader = new ShaderProgram(VERT_SHADER_SRC, FRAG_SHADER_SRC);
 		this.vertexArray = new VertexArray();
+		SrgbImageData whitePixelData = new SrgbImageData(1,1);
+		whitePixelData.setPixel(0, 0, 0xFF_FFFFFF);
+		whitePixel = new Texture();
+		whitePixel.setImage(whitePixelData);
 	}
 	
 	public void startDrawing() {
@@ -207,6 +214,8 @@ public class WindowPainter implements Painter, Destroyable {
 	@Override
 	public void fillRect(int x, int y, int width, int height, RGBColor color) {
 		shader.bind();
+		whitePixel.bindToUnit(0);                // Texture unit 0
+		shader.setUniform("materialTexture", 0); // Same texture unit
 		vertexArray.bind();
 		vertexArray.bindData(0,
 			new float[] {
@@ -224,6 +233,13 @@ public class WindowPainter implements Painter, Destroyable {
 				color.r(), color.g(), color.b(), 1
 			},
 			GLType.FLOAT_VEC4);
+		vertexArray.bindData(2, new float[] {
+				0, 0,
+				1, 0,
+				0, 1,
+				1, 1
+		}, GLType.FLOAT_VEC2);
+		/*
 		vertexArray.bindData(2,
 			new int[] {
 				HalfFloat.vecToHalfVec(new Vector2d(0, 0)),
@@ -231,7 +247,7 @@ public class WindowPainter implements Painter, Destroyable {
 				HalfFloat.vecToHalfVec(new Vector2d(0, 1)),
 				HalfFloat.vecToHalfVec(new Vector2d(1, 1)),
 			},
-			GLType.HALF_VEC2);
+			GLType.HALF_VEC2);*/
 		vertexArray.bindIndices(3, new int[] { 0, 1, 3, 0, 3, 2 });
 		
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);

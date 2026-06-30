@@ -13,12 +13,19 @@ public class Texture implements ImageData, GLResource {
 	
 	public Texture() {
 		handle = glGenTextures();
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, handle);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 	
 	public void bind() {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, handle);
+	}
+	
+	public void bindToUnit(int index) {
+		glActiveTexture(GL_TEXTURE0 + index);
 		glBindTexture(GL_TEXTURE_2D, handle);
 	}
 	
@@ -55,8 +62,10 @@ public class Texture implements ImageData, GLResource {
 		
 		if (width == oldWidth && height == oldHeight) {
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
 		} else {
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA_INTEGER, GL_UNSIGNED_INT_8_8_8_8, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 	}
 	
