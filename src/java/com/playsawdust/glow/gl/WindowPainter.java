@@ -58,7 +58,7 @@ public class WindowPainter implements Painter, Destroyable {
 			
 			void main() {
 				vec4 texColor = texture(materialTexture, vertexUv);
-				fragColor = vertexColor * vec4(texColor.xy, 1, 1);
+				fragColor = vertexColor * texColor;
 			}
 			""";
 	
@@ -100,23 +100,75 @@ public class WindowPainter implements Painter, Destroyable {
 	public int getHeight() {
 		return target.getHeight();
 	}
-
+	
 	@Override
 	public void drawImage(ImageData image, int destX, int destY, int srcX, int srcY, int width, int height, float opacity) {
-		// TODO: FIXME THIS WILL BE VERY SLOW
-		for(int y=0; y<height; y++) {
-			for(int x=0; x<width; x++) {
-				RGBColor col = image.getLinearPixel(srcX + x, srcY + y);
-				fillRect(destX + x, destY + y, 1, 1, col);
-			}
-		}
+		drawTintImage(image, destX, destY, srcX, srcY, width, height, new RGBColor(opacity, 1, 1, 1));
+		
 	}
 
 	@Override
 	public void drawTintImage(ImageData image, int destX, int destY, int srcX, int srcY, int width, int height, RGBColor tintColor) {
-		// TODO: FIXME THIS WILL NOT TINT THE IMAGE
-		drawImage(image, destX, destY, srcX, srcY, width, height, 1.0f);
-	} 
+		Texture texture;
+		if (image instanceof Texture tex) {
+			texture = tex;
+		} else {
+			texture = new Texture();
+			texture.setImage(image);
+		}
+		
+		shader.bind();
+		texture.bindToUnit(0);                // Texture unit 0
+		shader.setUniform("materialTexture", 0); // Same texture unit
+		vertexArray.bind();
+		vertexArray.bindData(0,
+			new float[] {
+				destX, destY,
+				destX+width, destY,
+				destX, destY+height,
+				destX+width, destY+height,
+			},
+			GLType.FLOAT_VEC2);
+		// TODO: These are linear, we should probably be giving the card SRGB data
+		vertexArray.bindData(1,
+			new float[] {
+					1,1,1,1,
+				//tintColor.r(), tintColor.g(), tintColor.b(), tintColor.alpha(),
+				tintColor.r(), tintColor.g(), tintColor.b(), tintColor.alpha(),
+				tintColor.r(), tintColor.g(), tintColor.b(), tintColor.alpha(),
+				tintColor.r(), tintColor.g(), tintColor.b(), tintColor.alpha()
+			},
+			GLType.FLOAT_VEC4);
+		
+		// Find uv's for pixel offsets into the texture
+		float u1 = srcX / (float) image.getWidth();
+		float v1 = srcY / (float) image.getHeight();
+		float u2 = (srcX + width) / (float) image.getWidth();
+		float v2 = (srcY + height) / (float) image.getHeight();
+		vertexArray.bindData(2, new float[] {
+				u1, v1,
+				u2, v1,
+				u1, v2,
+				u2, v2
+		}, GLType.FLOAT_VEC2);
+		// FIXME: Half-Floats do not seem to work right now.
+		
+		/*vertexArray.bindData(2,
+			new int[] {
+				HalfFloat.vecToHalfVec(new Vector2d(0, 0)),
+				HalfFloat.vecToHalfVec(new Vector2d(1, 0)),
+				HalfFloat.vecToHalfVec(new Vector2d(0, 1)),
+				HalfFloat.vecToHalfVec(new Vector2d(1, 1)),
+			},
+			GLType.HALF_VEC2);*/
+		vertexArray.bindIndices(3, new int[] { 0, 1, 3, 0, 3, 2 });
+		
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		
+		if (!(image instanceof Texture)) {
+			texture.destroy();
+		}
+	}
 
 	@Override
 	public void drawPixel(int x, int y, RGBColor color) {
@@ -228,19 +280,19 @@ public class WindowPainter implements Painter, Destroyable {
 			GLType.FLOAT_VEC2);
 		vertexArray.bindData(1,
 			new float[] {
-				color.r(), color.g(), color.b(), 1,
-				color.r(), color.g(), color.b(), 1,
-				color.r(), color.g(), color.b(), 1,
-				color.r(), color.g(), color.b(), 1
+				color.r(), color.g(), color.b(), color.alpha(),
+				color.r(), color.g(), color.b(), color.alpha(),
+				color.r(), color.g(), color.b(), color.alpha(),
+				color.r(), color.g(), color.b(), color.alpha()
 			},
 			GLType.FLOAT_VEC4);
-		vertexArray.bindData(2, new float[] {
-				0, 0,
-				1, 0,
-				0, 1,
-				1, 1
-		}, GLType.FLOAT_VEC2);
-		/*
+		//vertexArray.bindData(2, new float[] {
+		//		0, 0,
+		//		1, 0,
+		//		0, 1,
+		//		1, 1
+		//}, GLType.FLOAT_VEC2);
+		
 		vertexArray.bindData(2,
 			new int[] {
 				HalfFloat.vecToHalfVec(new Vector2d(0, 0)),
@@ -248,7 +300,7 @@ public class WindowPainter implements Painter, Destroyable {
 				HalfFloat.vecToHalfVec(new Vector2d(0, 1)),
 				HalfFloat.vecToHalfVec(new Vector2d(1, 1)),
 			},
-			GLType.HALF_VEC2);*/
+			GLType.HALF_VEC2);
 		vertexArray.bindIndices(3, new int[] { 0, 1, 3, 0, 3, 2 });
 		
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
