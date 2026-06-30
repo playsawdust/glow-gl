@@ -61,10 +61,10 @@ public class Texture implements ImageData, GLResource {
 		}
 		
 		if (width == oldWidth && height == oldHeight) {
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, data);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_BGRA, GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		} else {
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_BGRA_INTEGER, GL_UNSIGNED_INT_8_8_8_8, data);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 	}
@@ -76,8 +76,9 @@ public class Texture implements ImageData, GLResource {
 	public SrgbImageData getImage() {
 		if (width == 0 && height == 0) return new SrgbImageData(0, 0);
 		
+		bind();
 		int[] imageData = new int[width * height];
-		glGetTexImage(handle, 0, GL_BGRA_INTEGER, GL_UNSIGNED_INT_8_8_8_8, imageData);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_BGRA, GL_UNSIGNED_BYTE, imageData);
 		return new SrgbImageData(width, height, imageData);
 	}
 	

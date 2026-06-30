@@ -73,6 +73,7 @@ public class WindowPainter implements Painter, Destroyable {
 		this.vertexArray = new VertexArray();
 		SrgbImageData whitePixelData = new SrgbImageData(1,1);
 		whitePixelData.setPixel(0, 0, 0xFF_FFFFFF);
+		
 		whitePixel = new Texture();
 		whitePixel.setImage(whitePixelData);
 	}
