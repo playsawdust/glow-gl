@@ -80,6 +80,8 @@ public class WindowPainter implements Painter, Destroyable {
 	
 	public void startDrawing() {
 		glDisable(GL_CULL_FACE);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		shader.bind();
 		Vector2i windowSize = target.getSize();
 		int transformLoc = glGetUniformLocation(shader.getHandle(), "transform");
@@ -132,8 +134,7 @@ public class WindowPainter implements Painter, Destroyable {
 		// TODO: These are linear, we should probably be giving the card SRGB data
 		vertexArray.bindData(1,
 			new float[] {
-					1,1,1,1,
-				//tintColor.r(), tintColor.g(), tintColor.b(), tintColor.alpha(),
+				tintColor.r(), tintColor.g(), tintColor.b(), tintColor.alpha(),
 				tintColor.r(), tintColor.g(), tintColor.b(), tintColor.alpha(),
 				tintColor.r(), tintColor.g(), tintColor.b(), tintColor.alpha(),
 				tintColor.r(), tintColor.g(), tintColor.b(), tintColor.alpha()
